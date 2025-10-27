@@ -36,8 +36,71 @@ class SessionMemory:
             "user_preferences": {}
         }
     
+    def __getstate__(self):
+        """Custom pickle serialization"""
+        state = self.__dict__.copy()
+        # Convert datetime to string
+        state['created_at'] = self.created_at.isoformat()
+        state['last_accessed'] = self.last_accessed.isoformat()
+        # Convert deque to list
+        state['conversation_history'] = list(self.conversation_history)
+        # Convert sets to lists
+        state['context']['companies_discussed'] = list(state['context']['companies_discussed'])
+        state['context']['topics_covered'] = list(state['context']['topics_covered'])
+        state['context']['categories_explored'] = list(state['context']['categories_explored'])
+        return state
+    
+    def __setstate__(self, state):
+        """Custom pickle deserialization"""
+        self.__dict__.update(state)
+        
+        # Initialize defaults if missing
+        if not hasattr(self, 'session_id'):
+            self.session_id = state.get('session_id', str(uuid.uuid4()))
+        
+        # Restore datetime
+        if isinstance(self.created_at, str):
+            self.created_at = datetime.fromisoformat(self.created_at)
+        elif not isinstance(self.created_at, datetime):
+            self.created_at = datetime.now()
+            
+        if isinstance(self.last_accessed, str):
+            self.last_accessed = datetime.fromisoformat(self.last_accessed)
+        elif not isinstance(self.last_accessed, datetime):
+            self.last_accessed = datetime.now()
+        
+        # Restore deque
+        if isinstance(self.conversation_history, list):
+            self.conversation_history = deque(self.conversation_history, maxlen=50)
+        
+        # Restore context with proper types
+        if not hasattr(self, 'context') or not isinstance(self.context, dict):
+            self.context = {
+                "companies_discussed": set(),
+                "topics_covered": set(),
+                "analysis_performed": [],
+                "categories_explored": set(),
+                "user_preferences": {}
+            }
+        
+        # Convert lists back to sets if needed
+        if isinstance(self.context.get('companies_discussed'), list):
+            self.context['companies_discussed'] = set(self.context['companies_discussed'])
+        if isinstance(self.context.get('topics_covered'), list):
+            self.context['topics_covered'] = set(self.context['topics_covered'])
+        if isinstance(self.context.get('categories_explored'), list):
+            self.context['categories_explored'] = set(self.context['categories_explored'])
+    
     def add_exchange(self, query: str, response: str, metadata: Dict = None):
         """Add query-response pair with metadata"""
+        # Ensure context is properly initialized with sets
+        if not isinstance(self.context.get('companies_discussed'), set):
+            self.context['companies_discussed'] = set(self.context.get('companies_discussed', []))
+        if not isinstance(self.context.get('topics_covered'), set):
+            self.context['topics_covered'] = set(self.context.get('topics_covered', []))
+        if not isinstance(self.context.get('categories_explored'), set):
+            self.context['categories_explored'] = set(self.context.get('categories_explored', []))
+        
         self.conversation_history.append({
             "timestamp": datetime.now().isoformat(),
             "query": query,
@@ -219,7 +282,9 @@ class UltimateFinancialAgent:
         query_type = self._identify_query_type(query, context)
         category = self._identify_category(query)
         
-        # Update session context
+        # Update session context (ensure it's a set)
+        if not isinstance(session.context["categories_explored"], set):
+            session.context["categories_explored"] = set(session.context["categories_explored"])
         session.context["categories_explored"].add(category)
         
         # Route to appropriate handler
@@ -247,6 +312,9 @@ class UltimateFinancialAgent:
         # Extract entities for context
         companies = self._extract_companies(query)
         if companies:
+            # Ensure it's a set before calling .update()
+            if not isinstance(session.context["companies_discussed"], set):
+                session.context["companies_discussed"] = set(session.context["companies_discussed"])
             session.context["companies_discussed"].update([c["ticker"] for c in companies])
         
         # Save session
