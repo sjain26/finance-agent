@@ -1,0 +1,91 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+ENV/
+env/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment Variables
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+query_logs_*.jsonl
+financial_agent_*.log
+
+# Cache
+cache/
+.cache/
+*.cache
+# Exclude Alpha Vantage cache
+alpha_vantage_cache/
+
+# Data
+data/
+*.csv
+*.json
+*.pkl
+*.pickle
+
+# Pinecone
+pinecone_data/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# Documentation
+docs/_build/
+site/
+
+# Distribution
+.pypirc
+
+# Misc
+*.bak
+.python-version
