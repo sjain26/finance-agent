@@ -2,6 +2,10 @@
 
 A clean, production-ready autonomous financial research system using **LangGraph** for multi-agent orchestration.
 
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://finance-agent-chapter247.streamlit.app/)
+
+🌐 **Live Demo:** [https://finance-agent-chapter247.streamlit.app/](https://finance-agent-chapter247.streamlit.app/)
+
 ## 🏗️ Architecture
 
 ```mermaid
@@ -34,6 +38,10 @@ graph TD
 - ✅ **Single File**: Clean, maintainable architecture
 
 ## 🚀 Quick Start
+
+**🎯 Try it now:** [https://finance-agent-chapter247.streamlit.app/](https://finance-agent-chapter247.streamlit.app/)
+
+**🚀 Deployed on:** Streamlit Cloud
 
 ### 1. Install Dependencies
 
@@ -171,6 +179,19 @@ For production use, consider:
 - Error retry logic
 - Monitoring and logging
 
+## 🌐 Deployment
+
+**Live Application:** [https://finance-agent-chapter247.streamlit.app/](https://finance-agent-chapter247.streamlit.app/)
+
+### Deploy Your Own Copy
+
+1. **Fork this repository**
+2. **Connect to Streamlit Cloud** at [share.streamlit.io](https://share.streamlit.io)
+3. **Add your API keys** in Streamlit Cloud settings
+4. **Deploy!**
+
+The app will be live at: `https://your-app.streamlit.app`
+
 ## 🧪 Testing
 
 ```bash
@@ -204,5 +225,10 @@ Built with:
 
 ---
 
+---
+
 **Note**: This is a demonstration system. For production use, add proper error handling, rate limiting, and data validation.
+
+🌐 **Access Live Demo:** [https://finance-agent-chapter247.streamlit.app/](https://finance-agent-chapter247.streamlit.app/)
+
 # finance-agent
