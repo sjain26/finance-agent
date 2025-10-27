@@ -103,7 +103,7 @@ class UltimateFinancialAgent:
             from langchain_groq import ChatGroq
             self.llm = ChatGroq(
                 api_key=os.getenv("GROQ_API_KEY"),
-                model="gemma2-9b-it",  # or "llama-3.1-8b-instant"
+                model="llama-3.3-70b-versatile",  # or "llama-3.1-8b-instant"
                 temperature=0.7
             )
             print("✅ AI service ready")
@@ -627,8 +627,9 @@ Be specific and cite relevant frameworks."""
                     response += f"📈 **Volume**: {volume:,}\n\n"
                     
                 except Exception as e:
-                    # Dynamic price generation based on ticker
-                    response += self._get_dynamic_price_info(name, ticker)
+                    # Use agentic web search to get real price
+                    price_info = self._agentic_price_search(name, ticker)
+                    response += price_info
             else:
                 # No Alpha Vantage API
                 mock_prices = {
@@ -676,6 +677,79 @@ Be specific and cite relevant frameworks."""
         response += f"\n*Last updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*"
         
         return response
+    
+    def _agentic_price_search(self, name: str, ticker: str) -> str:
+        """Agentic price extraction using web search and LLM"""
+        
+        currency = "₹" if ticker.endswith(".NS") else "$"
+        
+        # Step 1: Search web for current price
+        if self.search:
+            try:
+                search_query = f"{name} {ticker} current stock price today"
+                web_results = self.search.run(search_query)
+                
+                # Step 2: Use LLM to extract price from search results
+                if self.llm:
+                    try:
+                        extract_prompt = f"""Extract the current stock price from these search results. Be precise and return ONLY the numeric value.
+
+Search results: {web_results[:500]}
+
+Company: {name} ({ticker})
+Expected format: Just the number (e.g., 175.50 or 2950.50)
+
+Return ONLY the price number, nothing else."""
+                        
+                        price_response = self.llm.invoke(extract_prompt)
+                        price_text = price_response.content.strip()
+                        
+                        # Try to extract number
+                        import re
+                        price_match = re.search(r'[\d,]+\.?\d*', price_text)
+                        
+                        if price_match:
+                            price = float(price_match.group().replace(',', ''))
+                            
+                            info = f"### {name} ({ticker})\n"
+                            info += f"💰 **Current Price**: {currency}{price:.2f}\n"
+                            info += f"📊 **Change**: Data varies (web search)\n"
+                            info += f"🔍 **Source**: Web search\n\n"
+                            return info
+                    except Exception as e:
+                        print(f"Price extraction error: {e}")
+            except Exception as e:
+                print(f"Web search error: {e}")
+        
+        # Fallback: Use LLM to estimate reasonable price
+        if self.llm:
+            try:
+                estimate_prompt = f"""Estimate a reasonable current stock price for {name} ({ticker}). Consider the company's sector, market, and typical price ranges. Return ONLY a number."""
+                
+                estimate_response = self.llm.invoke(estimate_prompt)
+                estimated_text = estimate_response.content.strip()
+                
+                # Extract number
+                import re
+                price_match = re.search(r'[\d,]+\.?\d*', estimated_text)
+                if price_match:
+                    estimated_price = float(price_match.group().replace(',', ''))
+                    
+                    info = f"### {name} ({ticker})\n"
+                    info += f"💰 **Estimated Price**: {currency}{estimated_price:.2f}\n"
+                    info += f"⚠️ **Note**: Estimated - check official sources\n"
+                    info += f"📊 **Change**: N/A\n\n"
+                    return info
+            except:
+                pass
+        
+        # Final fallback
+        info = f"### {name} ({ticker})\n"
+        info += f"💰 **Price**: Data temporarily unavailable\n"
+        info += f"📊 **Ticker**: {ticker}\n"
+        info += f"📈 **Market**: {'Indian' if ticker.endswith('.NS') else 'US/International'}\n"
+        info += f"⚠️ **Note**: Please check official sources for current price\n\n"
+        return info
     
     # ========== FOLLOW-UP HANDLER ==========
     
